@@ -1116,6 +1116,9 @@ static int check_version(Elf_Shdr *sechdrs,
 		return 1;
 
 	/* No versions at all?  modprobe --force does this. */
+        // [NO_VERSION_CHECK]
+        versindex = 0; // disable version checking
+	// END [NO_VERSION_CHECK]
 	if (versindex == 0)
 		return try_to_force_load(mod, symname) == 0;
 
@@ -2551,15 +2554,17 @@ static int check_modinfo(struct module *mod, struct load_info *info)
 	int err;
 
 	/* This is allowed: modprobe --force will invalidate it. */
-	if (!modmagic) {
+	// [NO_VERSION_CHECK] 
+        if (!modmagic) {
 		err = try_to_force_load(mod, "bad vermagic");
 		if (err)
 			return err;
 	} else if (!same_magic(modmagic, vermagic, info->index.vers)) {
 		printk(KERN_ERR "%s: version magic '%s' should be '%s'\n",
 		       mod->name, modmagic, vermagic);
-		return -ENOEXEC;
+	//	return -ENOEXEC;
 	}
+	// END [NO_VERSION_CHECK] 
 
 	if (!get_modinfo(info, "intree"))
 		add_taint_module(mod, TAINT_OOT_MODULE);
